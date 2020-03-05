@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e
+
+mkdir -p /ephemeral/var/log/yandex-ticket-daemon/yt
+mkdir -p /ephemeral/var/log/yandex-ticket-daemon/rasp/order
+mkdir -p /ephemeral/var/log/yandex-ticket-daemon/main
+mkdir -p /ephemeral/var/log/yandex-ticket-daemon/track/bad

@@ -1,0 +1,62 @@
+server {
+    include listen;
+    tvm2_service_id ${AVIA_TICKET_DAEMON_TVM_ID};
+    tvm2_keys_url "/keys?lib_version=2.0.5";
+
+    add_header Access-Control-Allow-Origin "$http_origin";
+
+    proxy_headers_hash_max_size 1024;
+    proxy_headers_hash_bucket_size 128;
+
+    # Взял список из /etc/nginx/nginx.conf и дополнил его application/manifest+json
+    gzip_types text/plain text/css application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript application/json application/x-protobuf application/manifest+json;
+
+    location / {
+        include auth/allow_yandex_only;
+        include proxy_params;
+        proxy_intercept_errors on;
+
+        tvm2_ticket $http_x_ya_service_ticket;
+        tvm2_allow_src ${AVIA_TICKET_DAEMON_TVM_HTTP_API_ID};
+
+        proxy_pass http://unix:/var/run/avia-ticket-daemon.sock:;
+        proxy_next_upstream error;
+    }
+
+    location /api/1.0/ping {
+        include auth/allow_yandex_only;
+        include proxy_params;
+        proxy_intercept_errors on;
+
+        proxy_pass http://unix:/var/run/avia-ticket-daemon.sock:;
+        proxy_next_upstream error;
+    }
+
+    location /api/1.0/track/bad {
+        include auth/allow_yandex_only;
+        include proxy_params;
+        proxy_intercept_errors on;
+
+        proxy_pass http://unix:/var/run/avia-ticket-daemon.sock:;
+        proxy_next_upstream error;
+    }
+
+    location /version {
+        include auth/allow_yandex_only;
+        include proxy_params;
+        proxy_intercept_errors on;
+
+        proxy_pass http://unix:/var/run/avia-ticket-daemon.sock:;
+        proxy_next_upstream error;
+    }
+
+    location /keys {
+        internal;
+        proxy_pass https://tvm-api.yandex.net/2/keys;
+    }
+
+    location /test {
+        return 200 'OK!';
+        add_header Content-Type: text/plain;
+    }
+}
